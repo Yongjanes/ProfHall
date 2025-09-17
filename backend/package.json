@@ -1,0 +1,12 @@
+{
+  "name": "profhall",
+  "version": "1.0.0",
+  "description": "A link in Bio tool Utility which you can allso host for free",
+  "license": "ISC",
+  "author": "Rohit Pali",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
