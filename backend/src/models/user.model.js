@@ -84,6 +84,20 @@ const userSchema = mongoose.Schema(
             },
             font: {
                 type: String
+            },
+            effects: {
+                effectType: {
+                    type: String,
+                    enum: ["flat", "glassmorphism", "neumorphism", "outlined", "glow"] // for now
+                }, 
+                shadow: {
+                    type: string,
+                    enum: ["sm", "md", "lg", "xl"]
+                },
+                borderRadius: {
+                    type: string,
+                    enum: ["sm", "md", "lg", "full"]
+                }
             }
         },
         password: {
