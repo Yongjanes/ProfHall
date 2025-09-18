@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
-const cardSchema = mongoose.Schema(
+const cardSchema = new mongoose.Schema(
     {
         title: {
             type: String,
@@ -40,7 +40,7 @@ const cardSchema = mongoose.Schema(
     }
 )
 
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         username: { // link name (unique)
             type: String,
@@ -93,18 +93,18 @@ const userSchema = mongoose.Schema(
                     enum: ["flat", "glassmorphism", "neumorphism", "outlined", "glow"] // for now
                 }, 
                 shadow: {
-                    type: string,
+                    type: String,
                     enum: ["sm", "md", "lg", "xl"]
                 },
                 borderRadius: {
-                    type: string,
+                    type: String,
                     enum: ["sm", "md", "lg", "full"]
                 }
             }
         },
         password: {
             type: String,
-            required: [true, "Passwrod is required!"],
+            required: [true, "Password is required!"],
         },
         cards: [
             cardSchema
@@ -122,17 +122,17 @@ const userSchema = mongoose.Schema(
 
 userSchema.pre("save", async function(next) {
     if (!this.isModified("password")) {
-        next()
+        return next()
     }
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-userSchema.methods.isPasswordCorrect = () => {
-    return bcrypt.compareSync(password, this.password)
+userSchema.methods.isPasswordCorrect = async function(password) {
+    return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAccessToken = async function() {
+userSchema.methods.generateAccessToken = function() {
     return jwt.sign(
         {
             _id: this._id,
@@ -147,7 +147,7 @@ userSchema.methods.generateAccessToken = async function() {
     )
 }
 
-userSchema.methods.generateRefreshToken = async function() {
+userSchema.methods.generateRefreshToken = function() {
     return jwt.sign(
         {
             _id: this._id
@@ -161,3 +161,87 @@ userSchema.methods.generateRefreshToken = async function() {
 
 
 export const User = mongoose.model("User", userSchema)
+
+
+// {
+//   "_id": "650f8b12a0b3c123456789ab",
+//   "username": "rohitp",
+//   "email": "rohit@example.com",
+//   "fullname": "Rohit Pali",
+//   "avatar": "https://example.com/avatar.jpg",
+//   "bio": "Full-stack developer who loves Node.js and music.",
+//   "theme": {
+//     "background": "#0a0913",
+//     "textColor": "#e5e4f3",
+//     "primary": "#a39bd1",
+//     "secondary": "#6a3169",
+//     "accent": "#b05392",
+//     "font": "Inter",
+//     "effects": {
+//       "effectType": "glassmorphism",
+//       "shadow": "lg",
+//       "borderRadius": "md"
+//     }
+//   },
+//   "password": "$2b$10$X5UJYX...hashedPasswordHere...",
+//   "cards": [
+//     {
+//       "_id": "650f8b12a0b3c123456789ac",
+//       "title": "GitHub",
+//       "url": "https://github.com/rohitp",
+//       "icon": "github",
+//       "order": 1,
+//       "cardType": "social",
+//       "style": {
+//         "background": "#24292e",
+//         "textColor": "#ffffff"
+//       },
+//       "meta": {
+//         "followers": 120,
+//         "repos": 15
+//       },
+//       "createdAt": "2025-09-17T12:00:00.000Z",
+//       "updatedAt": "2025-09-17T12:00:00.000Z"
+//     },
+//     {
+//       "_id": "650f8b12a0b3c123456789ad",
+//       "title": "My Portfolio",
+//       "url": "https://rohit.dev",
+//       "icon": "globe",
+//       "order": 2,
+//       "cardType": "custom",
+//       "style": {
+//         "background": "#1e1e2f",
+//         "textColor": "#e5e4f3"
+//       },
+//       "meta": {
+//         "description": "Personal portfolio website",
+//         "clicks": 89
+//       },
+//       "createdAt": "2025-09-17T12:05:00.000Z",
+//       "updatedAt": "2025-09-17T12:05:00.000Z"
+//     },
+//     {
+//       "_id": "650f8b12a0b3c123456789ae",
+//       "title": "Latest YouTube Video",
+//       "url": "https://youtube.com/watch?v=xyz123",
+//       "icon": "youtube",
+//       "order": 3,
+//       "cardType": "video",
+//       "style": {
+//         "background": "#ff0000",
+//         "textColor": "#ffffff"
+//       },
+//       "meta": {
+//         "views": 240,
+//         "likes": 32,
+//         "channel": "Rohit Codes"
+//       },
+//       "createdAt": "2025-09-17T12:10:00.000Z",
+//       "updatedAt": "2025-09-17T12:10:00.000Z"
+//     }
+//   ],
+//   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//   "createdAt": "2025-09-17T11:59:00.000Z",
+//   "updatedAt": "2025-09-17T12:20:00.000Z"
+// }
