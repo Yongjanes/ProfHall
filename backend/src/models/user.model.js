@@ -66,7 +66,8 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
         bio: {
-            type: String
+            type: String,
+            default: ""
         },
         theme: {
             background: {
@@ -111,6 +112,10 @@ const userSchema = new mongoose.Schema(
         ],
         refreshToken: {
             type: String
+        },
+        views: {
+            type: Number,
+            default: 0
         }
     }, 
     {
@@ -160,7 +165,7 @@ userSchema.methods.generateRefreshToken = function() {
 }
 
 
-export const User = mongoose.model("User", userSchema)
+export const User = new mongoose.model("User", userSchema)
 
 
 // {
