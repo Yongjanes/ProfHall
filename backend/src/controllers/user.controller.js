@@ -322,14 +322,87 @@ const getUser = asyncHandler( async (req, res) => { // /users/:username
 })
 
 const updateUserTheme = asyncHandler( async (req, res) => { // /users/theme
+    const { theme } = req.body
+    
+    if (!theme) {
+        throw new ApiError(400, "Theme field cannot be empty.")
+    }
+
+    const user = await User.findById(req.user?._id)
+
+    if (!user) {
+        throw new ApiError(400, "Unauthorized request.")
+    }
+
+    user.theme = theme
+
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Theme updated Successfully"
+        )
+    )
 
 })
 
 const updateUserSettings = asyncHandler( async (req, res) => { // /users/settings
+    const { settings } = req.body
+
+    if (!settings) {
+        throw new ApiError(400, "Settings cannot be Empty.")
+    }
+
+    const user = await User.findById(req.user?._id)
+
+    if (!user) {
+        throw new ApiError(400, "Unauthorized request.")
+    }
+
+    user.settings = settings
+
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Settings updated Successfully."
+        )
+    )
 
 })
 
 const deleteAccount = asyncHandler( async (req, res) => { // /users/delete
+    
+    const deleted = await User.deleteOne({_id: req.user?._id})
+
+    if (!deleted.deletedCount === 0) {
+        throw new ApiError(400, "Unauthorised Request (user not deleted)")
+    }
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Account Deleted Successfully. Bai Bai"
+        )
+    )
 
 })
 
@@ -355,4 +428,16 @@ const getSearchedUser = asyncHandler( async (req, res) => { // /users/:username/
 
 // analytics like views and clicks
 
-export { registerUser, loginUser, logoutUser, getCurrentUser, changePassword, updateUserDetails, updateUserAvatar, getUser }
+export { 
+    registerUser, 
+    loginUser, 
+    logoutUser, 
+    getCurrentUser, 
+    changePassword, 
+    updateUserDetails, 
+    updateUserAvatar, 
+    getUser, 
+    updateUserTheme, 
+    updateUserSettings, 
+    deleteAccount 
+}

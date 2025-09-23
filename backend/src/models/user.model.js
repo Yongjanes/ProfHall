@@ -2,6 +2,33 @@ import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
+const settingSchema = new mongoose.Schema(
+    {
+        isPrivate: {
+            type: Boolean,
+            default: false
+        },
+        allowSearchIndex: {
+            type: Boolean,
+            default: false
+        },
+        showAnalytics: {
+            type: Boolean,
+            default: false
+        },
+        notifications: {
+            email: {
+                type: Boolean,
+                default: true
+            },
+            sms: {
+                type: Boolean,
+                default: true
+            }
+        }
+    }
+)
+
 const cardSchema = new mongoose.Schema(
     {
         title: {
@@ -33,6 +60,10 @@ const cardSchema = new mongoose.Schema(
         meta: {
             type: mongoose.Schema.Types.Mixed,
             default: {}
+        },
+        clicks: {
+            type: Number,
+            default: 0
         }
     }, 
     {
@@ -68,6 +99,9 @@ const userSchema = new mongoose.Schema(
         bio: {
             type: String,
             default: ""
+        },
+        settings: {
+            settingSchema
         },
         theme: {
             background: {
