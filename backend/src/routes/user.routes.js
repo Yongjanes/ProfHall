@@ -21,6 +21,6 @@ router.route("/change-password").put(verifyJWT, changePassword)
 
 router.route("/update").patch(verifyJWT, updateUserDetails)
 
-router.route("/avatar").patch(verifyJWT, updateUserAvatar)
+router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
 
 export default router

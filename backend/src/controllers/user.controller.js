@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
-import { uploadOnAppwrite } from "../utils/appwrite.js"
+import { uploadOnAppwrite, deleteOnAppwrite } from "../utils/appwrite.js"
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -22,7 +22,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
-const registerUser = asyncHandler( async (req, res) => {
+const registerUser = asyncHandler( async (req, res) => { //  /auth/register
     // get user details
     // validate the entries - as if they are not empty and all
     // check if the user already exists 
@@ -78,7 +78,7 @@ const registerUser = asyncHandler( async (req, res) => {
     .json(new ApiResponse(201, createdUser, "User created  Successfully!"))
 })
 
-const loginUser = asyncHandler( async (req, res) => {
+const loginUser = asyncHandler( async (req, res) => { // /auth/login
     
     const {email,  username, password} = req.body
 
@@ -127,7 +127,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
 })
 
-const logoutUser = asyncHandler( async (req, res) => {
+const logoutUser = asyncHandler( async (req, res) => { // /auth/logout
     
     await User.findByIdAndUpdate(
         req.user._id,
@@ -159,7 +159,7 @@ const logoutUser = asyncHandler( async (req, res) => {
     )
 })
 
-const getCurrentUser = asyncHandler( async (req, res) => {
+const getCurrentUser = asyncHandler( async (req, res) => { // /auth/me
     
     const currentUser = await User.findById(req.user?._id)
 
@@ -178,7 +178,7 @@ const getCurrentUser = asyncHandler( async (req, res) => {
     )
 })
 
-const changePassword = asyncHandler( async (req, res) => {
+const changePassword = asyncHandler( async (req, res) => { // /auth/change-password
 
     const { oldPassword, newPassword } = req.body
 
@@ -209,14 +209,150 @@ const changePassword = asyncHandler( async (req, res) => {
     )
 })
 
-const updateUserDetails = asyncHandler( async (req, res) => {
+const updateUserDetails = asyncHandler( async (req, res) => { // /users/update
+    
+    const {fullname, email, bio} = req.body
+
+    if ([fullname, email, bio].some((ele) => {
+        ele.trim() === "";
+    })) {
+        throw new ApiError(400, "Entries cannot be empty")
+    }
+
+    // add email validator
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname: fullname,
+                email: email,
+                bio: bio
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password -refreshToken")
+
+    if (!user) {
+        throw new ApiError(400, "Unauthorized request.")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "Profile Updated Successfully."
+        )
+    )
+})
+
+const updateUserAvatar = asyncHandler( async (req, res) => { // /users/avatar
+    
+    const user = await User.findById(req.body?._id)
+
+    if (!user) {
+        throw new ApiError(400, "Unauthorized request.")
+    }
+    
+    const localAvatarPath = req.file.path;
+    
+    if (!localAvatarPath) {
+        throw new ApiError(400, "Avatar File is Required.")
+    }
+    
+    const avatarToBeDeleted = user.avatar;
+
+    if (!avatarToBeDeleted) {
+        throw new ApiError(500, "Internal Server Error.")
+    }
+
+    const isDeleted = await deleteOnAppwrite(avatarToBeDeleted)
+
+    if (!isDeleted) {
+        throw new ApiError(500, "Problem while deleting current Avatar")
+    }
+
+    const avatar = await uploadOnAppwrite(localFilePath)
+
+    user.avatar = avatar
+
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Avatar updated Successfully."
+        )
+    )
+})
+
+const getUser = asyncHandler( async (req, res) => { // /users/:username
+    const { username } = req.params
+
+    if (!username) {
+        throw new ApiError(404, "User Not Found!")
+    }
+
+    const user = await User.findOne({ username: username }).select("-password -refreshToken")
+
+    if (!user) {
+        throw new ApiError(400, "User Not Found!")
+    }
+
+    user.views += 1
+
+    await user.save({ validateBeforeSave: false })
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "User Found SuccessFully"
+        )
+    )
+})
+
+const updateUserTheme = asyncHandler( async (req, res) => { // /users/theme
 
 })
 
-const updateUserAvatar = asyncHandler( async (req, res) => {
+const updateUserSettings = asyncHandler( async (req, res) => { // /users/settings
 
 })
 
-// routes for cards and delete account , delete cards, and analytics like views and clicks
+const deleteAccount = asyncHandler( async (req, res) => { // /users/delete
 
-export { registerUser, loginUser, logoutUser, getCurrentUser, changePassword, updateUserDetails, updateUserAvatar }
+})
+
+const addCard = asyncHandler( async (req, res) => { // /users/cards
+
+})
+
+const deleteCard = asyncHandler( async (req, res) => { // /users/cards/:cardId
+
+})
+
+const updateCard = asyncHandler( async (req, res) => { // /users/cards/:cardId
+
+})
+
+const reorderCards = asyncHandler( async (req, res) => { // /users/cards/reorder
+
+})
+
+const getSearchedUser = asyncHandler( async (req, res) => { // /users/:username/search?query=xyz
+
+})
+
+// analytics like views and clicks
+
+export { registerUser, loginUser, logoutUser, getCurrentUser, changePassword, updateUserDetails, updateUserAvatar, getUser }

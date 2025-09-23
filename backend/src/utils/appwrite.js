@@ -34,4 +34,27 @@ const uploadOnAppwrite = async function(localFilePath) {
     }
 }
 
-export { uploadOnAppwrite }
+const deleteOnAppwrite = async function(avatar) {
+    const client = new Client()
+    
+    client
+        .setEndpoint(process.env.APPWRITE_ENDPOINT)
+        .setProject(process.env.APPWRITE_PROJECT_ID)
+        .setKey(process.env.APPWRITE_API_KEY)
+    
+    const storage = new Storage(client)
+
+    try {
+        await storage.deleteFile({
+            bucketId: process.env.APPWRITE_BUCKET_ID,
+            fileId: avatar.split("/files/")[1].split("/view")[0] // code to extract fileId from the link
+        })
+        return true
+    } catch (error) {
+        cono
+        console.log("Error : ", error)
+        return false;
+    }
+}
+
+export { uploadOnAppwrite, deleteOnAppwrite }
