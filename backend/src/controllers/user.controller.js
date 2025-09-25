@@ -608,5 +608,9 @@ export {
     getUser, 
     updateUserTheme, 
     updateUserSettings, 
-    deleteAccount 
+    deleteAccount ,
+    addCard,
+    deleteCard,
+    updateCard,
+    reorderCards
 }
