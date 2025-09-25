@@ -182,7 +182,7 @@ const changePassword = asyncHandler( async (req, res) => { // /auth/change-passw
 
     const { oldPassword, newPassword } = req.body
 
-    const user = await User.findById(req.body?._id)
+    const user = await User.findById(req.user?._id)
 
     if (!user) {
         throw new ApiError(400, "Unauthorised Request.")
@@ -213,9 +213,7 @@ const updateUserDetails = asyncHandler( async (req, res) => { // /users/update
     
     const {fullname, email, bio} = req.body
 
-    if ([fullname, email, bio].some((ele) => {
-        ele.trim() === "";
-    })) {
+    if ([fullname, email, bio].some((ele) => ele.trim() === "")) {
         throw new ApiError(400, "Entries cannot be empty")
     }
 
@@ -252,13 +250,13 @@ const updateUserDetails = asyncHandler( async (req, res) => { // /users/update
 
 const updateUserAvatar = asyncHandler( async (req, res) => { // /users/avatar
     
-    const user = await User.findById(req.body?._id)
+    const user = await User.findById(req.user?._id)
 
     if (!user) {
         throw new ApiError(400, "Unauthorized request.")
     }
     
-    const localAvatarPath = req.file.path;
+    const localAvatarPath = req.file?.path;
     
     if (!localAvatarPath) {
         throw new ApiError(400, "Avatar File is Required.")
@@ -276,7 +274,7 @@ const updateUserAvatar = asyncHandler( async (req, res) => { // /users/avatar
         throw new ApiError(500, "Problem while deleting current Avatar")
     }
 
-    const avatar = await uploadOnAppwrite(localFilePath)
+    const avatar = await uploadOnAppwrite(localAvatarPath)
 
     user.avatar = avatar
 
@@ -300,15 +298,11 @@ const getUser = asyncHandler( async (req, res) => { // /users/:username
         throw new ApiError(404, "User Not Found!")
     }
 
-    const user = await User.findOne({ username: username }).select("-password -refreshToken")
+    const user = await User.findOneAndUpdate({ username: username }, {$inc: { views: 1 }}, {new: true, select: "-password -refreshToken"})
 
     if (!user) {
-        throw new ApiError(400, "User Not Found!")
+        throw new ApiError(404, "User Not Found!")
     }
-
-    user.views += 1
-
-    await user.save({ validateBeforeSave: false })
 
     return res
     .status(200)
@@ -383,7 +377,7 @@ const deleteAccount = asyncHandler( async (req, res) => { // /users/delete
     
     const deleted = await User.deleteOne({_id: req.user?._id})
 
-    if (!deleted.deletedCount === 0) {
+    if (deleted.deletedCount === 0) {
         throw new ApiError(400, "Unauthorised Request (user not deleted)")
     }
 
@@ -407,24 +401,199 @@ const deleteAccount = asyncHandler( async (req, res) => { // /users/delete
 })
 
 const addCard = asyncHandler( async (req, res) => { // /users/cards
+    // {
+    //     "title": "GitHub",
+    //     "url": "https://github.com/rohitp",
+    //     "icon": "github",
+    //     "order": 1,
+    //     "cardType": "social",
+    //     "style": {
+    //         "background": "#24292e",
+    //         "textColor": "#ffffff"
+    //     },
+    //     "meta": {
+    //         "followers": 120,
+    //         "repos": 15
+    //     }
+    // }
+
+    const userId = req.user?._id
+
+    if (!userId) {
+        throw new ApiError(401, "Unauthorized rrequest")
+    }
+
+    const { title, url, icon, order, cardType, style, meta } = req.body
+
+    if (!title || !cardType) {
+        throw new ApiError(400, "title and cardType are required!")
+    }
+
+    const newCard = {
+        title,
+        url,
+        icon,
+        order: order || 0,
+        cardType,
+        style: style || {},
+        meta: meta || {},
+        clicks: 0
+    }
+
+    const updateUser = await User.findByIdAndUpdate(
+        userId,
+        {
+            $push: {
+                cards: newCard
+            }
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    )
+
+    if (!updateUser) {
+        throw new ApiError(404, "User not found!")
+    }
+
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(
+            201,
+            updateUser.cards,
+            "Card Added Successfully."
+        )
+    )
 
 })
 
 const deleteCard = asyncHandler( async (req, res) => { // /users/cards/:cardId
+    
+    const userId = req.user?._id
 
+    if (!userId) {
+        throw new ApiError(401, "Unauthorized request")
+    }
+
+    const cardId = req.params.cardId
+
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+            $pull: {
+                cards: {
+                    _id: cardId
+                }
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User Not found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            updatedUser.cards,
+            "Card deleted successfully"
+        )
+    )
 })
 
 const updateCard = asyncHandler( async (req, res) => { // /users/cards/:cardId
+    const userId = req.user?._id
+
+    if (!userId) {
+        throw new ApiError(401, "Unauthorized request")
+    }
+
+    const cardId = req.params.cardId
+
+    const updates = req.body
+
+    if ("clicks" in updates) delete updates.clicks
+
+    const updatedUser  = await User.findOneAndUpdate(
+        { _id: userId, "cards._id": cardId},
+        {
+            $set: Object.fromEntries(Object.entries(updates).map(([k, v]) => [`cards.$.${k}`, v]))            
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    )
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found")
+    }
+
+    const updatedCard = updatedUser.cards.id(cardId)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            updatedCard,
+            "Card Updated Successfully"
+        )
+    )
 
 })
 
 const reorderCards = asyncHandler( async (req, res) => { // /users/cards/reorder
+    const userId = req.user?._id
+
+    const { orderedCardIds } = req.body
+    
+    if (!Array.isArray(orderedCardIds)) {
+        throw new ApiError(400, "orderCardIds must be an array")
+    }
+    
+    const user = await User.findById(userId)
+    
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+
+    const newCardsOrder = []
+
+    orderedCardIds.forEach((id, index) => {
+        const card = user.cards.id(id)
+        if (card) {
+            card.order = index+1
+            newCardsOrder.push(card)
+        }
+    })
+
+    user.cards = newCardsOrder
+
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            user.cards,
+            "Cards reordered successfully"
+        )
+    )
 
 })
 
-const getSearchedUser = asyncHandler( async (req, res) => { // /users/:username/search?query=xyz
+// const getSearchedUser = asyncHandler( async (req, res) => { // /users/:username/search?query=xyz
 
-})
+// })
 
 // analytics like views and clicks
 

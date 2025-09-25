@@ -47,7 +47,8 @@ const cardSchema = new mongoose.Schema(
         },
         cardType: { 
             type: String,
-            enum: ["social", "video", "product", "image", "custom"]
+            enum: ["social", "video", "product"],
+            required: true
         },
         style: {
             background: {
