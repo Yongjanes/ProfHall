@@ -30,6 +30,9 @@ router.route("/register").post(upload.single("avatar"), registerUser);
 router.route("/login").post(loginUser);
 router.route("/users/:username").get(getUser)
 
+// Refresh token route (PUBLIC)
+router.route("/refresh").get(refreshAccessToken);
+
 // Secured Routes
 router.use(verifyJWT)
 
