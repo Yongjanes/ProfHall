@@ -1,1 +1,13 @@
-@import "tailwindcss"
+@import "tailwindcss";
+
+@theme {
+    --color-background: #0b0c10;
+    --color-foreground: #e6e6e9;
+    --color-primary: #c4a46a;
+    --color-secondary: #5a4fcf;
+    --color-accent: #d66ba0;
+    --color-support: #8a8a93;
+
+    --font-heading: "Playfair Display", "Georgia", "Times New Roman", serif;
+    --font-body: "Inter", "Helvetica Neue", "Helvatica", "Arial", sans-serif;
+}

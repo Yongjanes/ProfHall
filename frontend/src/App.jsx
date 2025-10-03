@@ -1,36 +1,26 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router"
-import { useEffect } from "react"
-import { useAuth } from "./context/AuthContext.jsx"
+import { Routes, Route } from "react-router"
 
-// Import Pages
-import Loading from "./pages/Loading.jsx"
+// Layouts
+import MainLayout from "./layouts/MainLayout.jsx"
+
+// Pages
 import Home from "./pages/Home.jsx"
 import Dashboard from "./pages/Dashboard.jsx"
+import PageNotFound from "./pages/PageNotFound.jsx"
 
 function App() {
-    const { user, loading } = useAuth()
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        if (!loading && user) {
-            navigate("/me", { replace: true})
-        }
-    }, [loading, user, navigate])
-    
-    if (loading) {
-        return <Loading />
-    }
-
     return (
-        <Routes> 
-            {/* Home Page */}
-            <Route path="/" element={<Home />} />
+        <Routes>
+            <Route element={<MainLayout />}>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
 
-            {/* Protected Routes */}
-            <Route path="/me" element={ user ? <Dashboard /> : <Navigate to="/" replace />} />
+                {/* Protected Routes */}
+                <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* Catch all - redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Fallback Route */}
+                <Route path="*" element={<PageNotFound />} />
+            </Route>
         </Routes>
     )
 }
