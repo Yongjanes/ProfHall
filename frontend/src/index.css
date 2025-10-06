@@ -1,13 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-    --color-background: #0b0c10;
-    --color-foreground: #e6e6e9;
-    --color-primary: #c4a46a;
-    --color-secondary: #5a4fcf;
-    --color-accent: #d66ba0;
-    --color-support: #8a8a93;
+    --color-primary: hsl(0, 0%, 0%);
+    --color-primary-foreground: hsl(47, 39%, 95%);
+    --color-secondary: hsl(220, 13%, 60%);
+    --color-secondary-foreground: hsl(220, 49%, 9%);
+    --color-accent: hsl(46, 65%, 53%);
+    --color-accent-foreground: hsl(220, 49%, 9%);
+    --color-background: hsl(47, 39%, 95%);
+    --color-foreground: hsl(220, 49%, 9%);
+    --color-popover: hsl(0, 0%, 100%);
+    --color-popover-foreground: hsl(220, 49%, 9%);
+    --color-muted: hsl(47, 28%, 90%);
+    --color-muted-foreground: hsl(220, 9%, 46%);
+    --color-destructive: hsl(40, 49%, 36%);
+    --color-destructive-foreground: hsl(47, 39%, 95%);
+    --color-border: hsl(50, 29%, 81%);
+    --color-input: hsl(50, 29%, 81%);
+    --color-ring: hsl(46, 65%, 53%);
+    --color-sidebar: hsl(47, 39%, 95%);
+    --color-sidebar-foreground: hsl(220, 49%, 9%);
+    --color-sidebar-primary: hsl(227, 68%, 43%);
+    --color-sidebar-primary-foreground: hsl(47, 39%, 95%);
+    --color-sidebar-accent: hsl(46, 65%, 53%);
+    --color-sidebar-accent-foreground: hsl(220, 49%, 9%);
+    --color-sidebar-border: hsl(224, 41%, 18%);
+    --color-sidebar-ring: hsl(46, 65%, 53%);
 
-    --font-heading: "Playfair Display", "Georgia", "Times New Roman", serif;
-    --font-body: "Inter", "Helvetica Neue", "Helvatica", "Arial", sans-serif;
+    --font-sans: "Geist", sans-serif;
+    --font-serif: "Source Serif 4", serif;
+    --font-mono: "Geist Mono", monospace;
 }
+
+
