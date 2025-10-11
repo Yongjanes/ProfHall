@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx"
 import PageNotFound from "./pages/PageNotFound.jsx"
 import Signup from "./pages/Signup.jsx"
 import Login from "./pages/Login.jsx"
+import ShowcaseTemplate from "./pages/ShowcaseTemplate.jsx"
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/user/:username" element={<ShowcaseTemplate />} />
 
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={<Dashboard />} />
