@@ -1,3 +1,5 @@
+import { Link } from "react-router"
+
 function Hero() {
     return (
         <section className="w-full bg-background text-foreground flex flex-col items-center md:items-start justify-centertext-center md:text-left px-6 py-20">
@@ -9,12 +11,12 @@ function Hero() {
                 Transform your online identity into a stunning showcase with ProfHall's beautifully crafted link in bio pages.
             </p>
 
-            <a 
-                href="/signup"
+            <Link 
+                to="/signup"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium shadow hover:bg-secondary hover:text-secondary-foreground transition-colors"
             >
                 Get Started
-            </a>
+            </Link>
         </section>
     )
 }
