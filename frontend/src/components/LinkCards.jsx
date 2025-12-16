@@ -1,7 +1,10 @@
+import LinkCard from './LinkCard'
+
 function LinkCards() {
     return (
         <div>
-            LinkCards
+            <LinkCard url="google.com" title="Youtube" description="but i think this is youtube" />
+            <LinkCard url="google.com" title="Youtube"  />
         </div>
     )
 }
